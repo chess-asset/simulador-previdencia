@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador do Colaborador · Plano de Previdência</title>
+<meta name="theme-color" content="#10243F">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAADD5JREFUeNrs3T1y48YWBtBrewMKHWIH1hLgHTB1hiXQO0DqiEtQeQVcgrwDxo4mdSaHzmx2iVOe0gwl/qCB7sY5VTd6getRPX3RzYuPEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3qj/XoY+BG3bE2PgaA5QzHej7Wv6d6Om3OcImH05r5vH4+ndbUg48GYL5G/umLjfhtaex81MjHY72cWT8vp/9dYwfIuAm/18g1di55GHyxhgDKO01dUk5bbK58GHxb+3id1QDgSt3pdHRPI3eNSmrCzxOtoVSH0ykfgAsb+b+ZSmNfzzp6zriO0ml/ax0BfPsktc+4AZ9r7HggnGIddT56QCPPe5K65KQ1+DNUb4pZi3srPUjIQwBWJzXRw4Kbr8beju3CjfxtPYcBOmAljfyeaWONHWsJYCG3vEPulMU5fSz7NY1BTGC1jbyk61CNvV5dZY38W41dUA1Q3cY756Sxxm491VZP1hNg412+sTthueGZcj0N/tRAKfqo+yr01hOWxp5P64383ACd79kBjVxjb8IQdQ1PCqoBbLoaO28eDg/WkTUFaOReT6rTo1seA5nAPNYwmKSxz6+L9gcopy6/9AZo5Bp7cevK+rhvgM66ApycFmrsTlYeEHOsq134nh1441Ejl+2dyRBmLwTVANmlTcBQksaea21p5PMP0G1sa7AuG428iMbe4ubrIdFDI+D602tJFevC1zYGM4GsHjRyjT3z+tr5+wmqAfJutGOYLNbYrS/1f+3DAB1UdfVpo3WiysmNj196AzI3ct9hauw59Rp5kwN02/A9OxTBO+Qa+xyN3OS6X3oDbLJqwtrNeJpy67Peh8dHWyzkN2jkTlOR93WkB41chV96g6yN3PeXKmdjN7muBNVAxpPSViNXMzT2QSNXFzT2nDdD0Gwjd1JSc5ykNh4Y1Q0PkIJq4APpH8hOI1czNPY+zGIov/QGWRq5ISQ1R2NPa23vs1ETl6AaVq/XyNUMdThdrVtraq6HSN+zT+B7H0GVTR1yerDBMuNt408+BtZsDN+bqzzDS9tvbLhO6irX6dwBBU4brSElNddrbBq7mrJGWzh8zWtE6t6p42uu13sPkirum88QEwvv+Pweug1DXfM7190da05jV/d+nQO849Emq2LevG2NXV2y5jrbM9xmCENz6usBpE3GNdf76kc5lUO+a/idTcWmGvMGeAwauzp9pePVR8hwcjrYYEyuL3BLpLGvc91tbLuQ19Y1vMl1X/+olaw7WMU1vFxuk+tLrLtRYxcQA+S5hncdanJdY1f31s6pHMpgc3Uy0tiVgBhoRBfeI27x98traeziZMW2AhMTIWtyfcmHSo29jq92nMqhsqtQm5fvKjV2JSAGGiBCtqxXgbqVrb/0/9fbGGJbgQkNYXDJ5Ppyeg+Wq0kYBGYgQtbkusYuthVobFMVIWtyXWMX2wo0QoRsnsl1LjeENzIMXQKTECE73fu8NlGN3Vc8QBFXoDZUk+sauwdKoBFpY3ANL5hjab4OEtsKTKALA0vvbaC9JTILOfFiW4GJiJA1ua6xC4gBGttMTa5jLYptBRqwxgjZMQwalSidTteWE+9UDkxuiPavPk2ua+wCYoBVaDVC1ilIYxfbCqxSH21EyPrxlDa08rXQJ6dyYCm1vjNscr3dB81aG7vYVmBxNUXImhbW2MW2AlywiZb67vrnV9CcgNa3Jkv+amj0JwJKNkZZ1/Am1xkKe9gU2wpUIzXQpa88Ta5TWmMXVgRUa4kIWZPrlNjYPWAC1ZsrttPkOresy9xfDxnEBJqT613hF42cQhv73qkcaNkw0eZpcp1SG7vYVmBVm+c9EbJPGjmFrk2xrcAq9XHde8KuMJlLF9flxAuIAYiPI2RNrlNyYxfbCvCFb0XI+rEKSm7sBw+aAOf1YXKdstdnevAcfRQA5w3xf+CHIA4AqPDUc+4ddSchACjcpWEzJogBoEBdXPdKkNfWAKAgU+S6y8YGgAWNMW1etleGAGBGQ+T9qUoxsACQUR/Xxbr6xTUAKEiun0m9pJ5P/30A4EZd3Da5nqNkawPAle79uclcJQceAC5s5GNMO7me6xq+8+cCgK8NkXdyPUeN/mwA8KqvsJGLkAWALxr5UpPrOUqELACrkppeKZPrOd5dFyELQNNKnVzPUSJkAWiykY9R/uS6CFkAOGOIugfeRMgCsGobjVyELAD16qOtyXURsgCsShevr21p2CJkAahQOmm2+gqaCFkAVtHIx1jn5LoIWQCaMGjkImQBqJfJdRGyAFQsnRpNrouQBaBSXZhcFyELQNWN3OS6CFkAKmVyXYQsAJXbauQiZAGoVzrxmVwXIQtApfowuS5CFoBqdRq5CFkA6m7kJtdFyAJQKZPrImQBqJzJdRGynX8GAPUawuS6EiELUK0+XqNCNTIlQhagQilkxOS6EiELUKkuTK4rEbIA1fo8ua45KRGyAJUaw+S6mv7dddfwADMZwuS6EiELUK0+TK4rEbIAVTdyk+tqqaG50T9BgPuk05HJdSVCFqBSaShpp4moAmsfhuYALmrkY5hcVyJkAao1hMl1JUIWoFq9Rq4qr124hgdW3shNrisRssCsvvMRTCqdaHwHSYv+ONbPPgYo1w8+gkn9eTqh/+ijoLFm/uux/vJRAGs8qbuuVabeARqwCa+pKfGwAE1IG6KMdlXbqdwPuACc4QpeSYsDaIQreOVnVQEa0YV31JXwGIBmjBqJKuBU3vunCHC/tJm6gldL1OhUDjCttKm6gldz/ujKo3920CZJccv651i/x2sEb+/jIJO/j/XbsX4JaW8A2aWG7gpeCYgBaIAreCW2FaAhWw1J3VF7p3KAcqThpU+ak7ryVC4gBqBAD6fTlmalxLYCNMAVvBIQA9AIV/BKbCtAI1zBK6dygIa4gl93bCsADUlX8AcNTmwrAPVLV/BPmp2AGADaMITYWLGtADTBFbxTOQCNcAUvIAaAhgzhCl5sKwBNcAVfTz05lQPwkZ2GKSAGgDakq1xX8GJbAWhAF67gSwmIcSoH4G6u4MW2AtAIV/DzB8SIbQUgiy5cwQuIAaAZo8YrthWANvThCn7KU/lgSQGwlIfTqVJTFtsKQANGjVlsKwBt6MMVvIAYAJrgCl5sKwANGTVvp3IA2tCfTqRiWwXEAFC5dCLdh9hWAGjCNgTEAEAT0rVz61fwYlsBWIWWr+CdygFYnZau4AXEALBqLVzBi20FgFMzfIo6A2KcygHgjSHqiY0VEAMA70hX8IcQ2woA1Sv1Cn70pwGA6w1RxhW82FYAuNOSV/AvTuUAMJ0lruAFxABAJpvIfwUvthUAZpBOzbmu4PdO5QAwr12IbQWAJkxxBS+2FQAK0MVtV/ACYgCgQNdcwYttBYCCfXQFf3AqB4A6pJP3c4htBYAmjCG2FQCaoJEDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHCr/wQYAF8hVhGXaiudAAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F0E6; --paper-2:#EFE9DC; --ink:#10243F; --ink-2:#1A3355;
+    --ink-soft:#4A5B74; --ink-mute:#8C95A3; --rule:rgba(16,36,63,.14);
+    --rule-strong:rgba(16,36,63,.28); --gold:#A8803A; --gold-deep:#8B6525;
+    --gold-soft:#C9A765; --accent-bg:rgba(168,128,58,.08); --card:#FAF6EC;
+    /* series — paleta validada (6 checks) sobre superficie #F5F0E6 */
+    --s-plano:#A8803A; --s-fora:#3A6EA5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;font-feature-settings:"ss01","cv11","tnum","lnum";
+    -webkit-text-size-adjust:100%}
+  a{color:var(--gold-deep)}
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 22px 56px}
+  @media (max-width:520px){.wrap{padding:20px 14px 44px}}
+
+  header.top{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--rule-strong);padding-bottom:16px;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .sym{width:24px;height:24px;background:url('data:image/png;base64,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') center/contain no-repeat;flex:none}
+  .brand .bn{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-mute);font-weight:600}
+  .kicker{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:600}
+  h1{font-family:'Fraunces',serif;font-weight:300;font-size:36px;letter-spacing:-.02em;margin:6px 0 0;line-height:1.05}
+  .top .right{text-align:right;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute);font-weight:600;line-height:1.9}
+  @media (max-width:640px){h1{font-size:27px} .top .right{text-align:left}}
+
+  .lead{margin:16px 0 0;font-size:13.5px;line-height:1.65;color:var(--ink-soft);max-width:64ch}
+
+  .grid{display:grid;grid-template-columns:322px 1fr;gap:24px;margin-top:24px;align-items:start}
+  .grid>*{min-width:0}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .panel{border:1px solid var(--rule-strong);background:var(--card);padding:17px 17px 15px;min-width:0}
+  .panel+.panel{margin-top:17px}
+  h2.sec{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute);
+    margin:0 0 13px;font-weight:600;border-bottom:1px solid var(--rule);padding-bottom:8px}
+
+  .field{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:9px 0;border-bottom:1px dotted var(--rule)}
+  .field:last-child{border-bottom:none}
+  .field label{font-size:12px;color:var(--ink-soft);line-height:1.35}
+  .field .ctl{display:flex;align-items:center;gap:5px;flex:none}
+  input{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);background:#fff;
+    border:1px solid var(--rule-strong);padding:7px 8px;border-radius:0;text-align:right}
+  input:focus{outline:2px solid var(--gold-soft);outline-offset:-1px}
+  input.num-s{width:64px} input.num-l{width:112px}
+  .suffix{font-size:11px;color:var(--ink-mute);font-family:'IBM Plex Mono',monospace}
+  .hint{font-size:10.5px;line-height:1.5;color:var(--ink-mute);margin-top:10px;padding-top:9px;border-top:1px dotted var(--rule)}
+
+  .hero{padding:16px 17px;background:var(--accent-bg);border-left:2px solid var(--gold)}
+  .hero .hk{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:600}
+  .hero .hv{font-family:'Fraunces',serif;font-size:38px;line-height:1.05;color:var(--gold-deep);margin-top:5px;letter-spacing:-.02em}
+  @media (max-width:640px){.hero .hv{font-size:30px}}
+  .hero .hd{font-size:11.5px;line-height:1.55;color:var(--ink-soft);margin-top:8px}
+  .hero .hd b{color:var(--ink)}
+
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
+    border:1px solid var(--rule);margin-top:17px}
+  @media (max-width:640px){.kpis{grid-template-columns:1fr}}
+  .kpi{background:var(--card);padding:12px 13px}
+  .kpi .k{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:600}
+  .kpi .v{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--ink);margin-top:5px}
+  .kpi .d{font-size:10px;color:var(--ink-mute);margin-top:3px;line-height:1.4}
+
+  figure{margin:0}
+  figcaption{font-size:10.5px;line-height:1.55;color:var(--ink-mute);margin-top:9px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 0 10px}
+  .legend .li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-soft)}
+  .legend .sw{width:14px;height:3px;border-radius:1.5px;flex:none}
+  .chartbox{position:relative}
+  svg.chart{display:block;width:100%;height:auto;touch-action:pan-y}
+  .tip{position:absolute;pointer-events:none;background:var(--ink);color:#F5F0E6;
+    padding:8px 10px;font-size:11px;line-height:1.5;border-radius:2px;opacity:0;transition:opacity .09s;
+    white-space:nowrap;z-index:5;box-shadow:0 4px 14px rgba(16,36,63,.22)}
+  .tip .tt{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.62;display:block;margin-bottom:3px}
+  .tip .tr{display:flex;align-items:center;gap:6px}
+  .tip .tr .sw{width:9px;height:9px;border-radius:50%;flex:none}
+  .tip b{font-family:'IBM Plex Mono',monospace;font-weight:500}
+
+  table.tb{width:100%;border-collapse:collapse;font-size:12px}
+  table.tb th{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);
+    font-weight:600;padding:8px;border-bottom:1px solid var(--rule-strong);text-align:right}
+  table.tb th:first-child{text-align:left}
+  table.tb td{padding:8px;border-bottom:1px solid var(--rule);text-align:right;
+    font-family:'IBM Plex Mono',monospace;color:var(--ink-soft)}
+  table.tb td:first-child{text-align:left;font-family:'Inter',sans-serif;color:var(--ink)}
+  table.tb tr:last-child td{border-bottom:none}
+  table.tb td.gold{color:var(--gold-deep);font-weight:600}
+  .tabwrap{overflow-x:auto}
+
+  .cta{display:block;margin-top:22px;padding:17px 20px;background:var(--ink);color:var(--paper);
+    text-decoration:none;text-align:center}
+  .cta .c1{font-family:'Fraunces',serif;font-size:20px;font-weight:400}
+  .cta .c2{font-size:11px;color:var(--gold-soft);margin-top:5px;letter-spacing:.04em}
+  .cta:hover{background:var(--ink-2)}
+
+  .note{font-size:11px;line-height:1.65;color:var(--ink-soft);margin-top:12px}
+  footer.legal{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule-strong);
+    font-size:10px;line-height:1.65;color:var(--ink-mute)}
+  .selftest{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:7px 12px;
+    display:inline-block;max-width:100%;overflow-wrap:anywhere;border:1px solid var(--rule-strong);background:var(--card)}
+  .selftest.ok{border-color:var(--gold);color:var(--gold-deep)}
+  .selftest .x{color:#a33}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="brand"><span class="sym"></span><span class="bn">Chess Capital</span></div>
+      <div class="kicker" style="margin-top:12px">Plano de Previdência · Simulador do Colaborador</div>
+      <h1>Quanto o seu plano<br>pode acumular</h1>
+    </div>
+    <div class="right">Valores ilustrativos<br>Não é oferta</div>
+  </header>
+
+  <p class="lead">
+    A instituição passa a depositar <b>8% do seu salário</b> todos os meses numa conta de
+    previdência aberta no seu nome. O dinheiro não sai do seu bolso. Preencha os campos
+    ao lado para ver quanto isso pode virar até você parar de trabalhar.
+  </p>
+
+  <div class="grid">
+
+    <div>
+      <div class="panel">
+        <h2 class="sec">Seus dados</h2>
+        <div class="field">
+          <label for="sal">Seu salário mensal</label>
+          <div class="ctl"><span class="suffix">R$</span><input id="sal" class="num-l" inputmode="numeric" value="5.000"></div>
+        </div>
+        <div class="field">
+          <label for="idade">Sua idade hoje</label>
+          <div class="ctl"><input id="idade" class="num-s" type="number" min="16" max="74" value="35"><span class="suffix">anos</span></div>
+        </div>
+        <div class="field">
+          <label for="alvo">Idade em que pretende<br>parar de trabalhar</label>
+          <div class="ctl"><input id="alvo" class="num-s" type="number" min="17" max="85" value="65"><span class="suffix">anos</span></div>
+        </div>
+        <div class="field">
+          <label for="taxa">Rentabilidade estimada</label>
+          <div class="ctl"><input id="taxa" class="num-s" type="number" min="0" max="30" step="0.5" value="8"><span class="suffix">% a.a.</span></div>
+        </div>
+        <p class="hint">
+          A rentabilidade é uma <b>premissa de projeção</b>, não uma promessa. Rendimento passado
+          não garante rendimento futuro, e o valor final pode ser maior ou menor.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec">Regras do plano</h2>
+        <div class="tabwrap">
+        <table class="tb">
+          <tr><td>Quem deposita</td><td>a instituição</td></tr>
+          <tr><td>Quanto</td><td>8% do salário</td></tr>
+          <tr><td>Tipo de plano</td><td>VGBL</td></tr>
+          <tr><td>Imposto de renda</td><td>35% → 10%</td></tr>
+          <tr><td>Prazo de resgate</td><td>120 dias</td></tr>
+        </table>
+        </div>
+        <p class="hint">
+          Administração <b>BTG Pactual</b> · seguradora <b>BTG Vida &amp; Previdência</b> ·
+          gestão do veículo de investimento pela <b>Chess Capital</b>.
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <div class="hero">
+        <div class="hk">Saldo estimado quando você parar de trabalhar</div>
+        <div class="hv" id="heroVal">—</div>
+        <div class="hd" id="heroDesc">—</div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="k">Depósito mensal</div><div class="v" id="kAporte">—</div><div class="d">feito pela instituição, no seu nome</div></div>
+        <div class="kpi"><div class="k">Total depositado</div><div class="v" id="kTotal">—</div><div class="d" id="kTotalD">—</div></div>
+        <div class="kpi"><div class="k">Renda mensal estimada</div><div class="v" id="kRenda">—</div><div class="d">se você retirar só o rendimento</div></div>
+      </div>
+
+      <div class="panel" style="margin-top:17px">
+        <h2 class="sec">Com o plano × por conta própria</h2>
+        <figure>
+          <div class="legend">
+            <span class="li"><span class="sw" style="background:var(--s-plano)"></span>No plano de previdência</span>
+            <span class="li"><span class="sw" style="background:var(--s-fora)"></span>Mesmo valor num fundo comum</span>
+          </div>
+          <div class="chartbox">
+            <svg class="chart" id="svgLinha" viewBox="0 0 720 360" role="img" aria-labelledby="chartTitle"></svg>
+            <div class="tip" id="tip"></div>
+          </div>
+          <figcaption id="capLinha">—</figcaption>
+        </figure>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec">Se você sair antes de se aposentar</h2>
+        <div class="tabwrap">
+          <table class="tb" id="tabVesting">
+            <thead><tr><th>Saída depois de</th><th>Saldo acumulado</th><th>Fica com você</th><th>Volta à instituição</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note">
+          Cada depósito tem um prazo próprio de carência: nada no 1º ano, e 100% a partir do 6º ano
+          contado daquele depósito. Por isso os depósitos mais antigos já são inteiramente seus e
+          os mais recentes ainda não. <b>Ao chegar na idade de aposentadoria, 100% do saldo é seu</b> —
+          a carência só vale para quem sai antes.
+        </p>
+      </div>
+
+      <a class="cta" id="ctaForm" href="#" target="_blank" rel="noopener">
+        <span class="c1">Quero aderir ao plano</span>
+        <div class="c2">preencher o formulário de intenção · leva 2 minutos</div>
+      </a>
+      <p class="note" id="ctaNote"></p>
+    </div>
+  </div>
+
+  <div id="selftest"></div>
+
+  <footer class="legal">
+    Valores nominais e ilustrativos, projetados com a rentabilidade informada, aporte mensal e
+    capitalização mensal equivalente à taxa anual efetiva. Não constituem promessa de rentabilidade
+    nem oferta de plano de previdência. Plano VGBL com instituidor pessoa jurídica (regime instituído
+    — o depósito é integralmente da instituição), operado por seguradora habilitada pela SUSEP;
+    a Chess Capital atua como gestora do veículo de investimento.
+    A comparação com o fundo comum supõe <b>o mesmo valor depositado e a mesma rentabilidade bruta</b>
+    nos dois caminhos: a única diferença é o tratamento do imposto de renda. No fundo comum considera-se
+    o come-cotas semestral de 15% e o complemento de imposto no resgate à alíquota de 15%; depósitos com
+    menos de 720 dias pagariam mais, de modo que a comparação é conservadora a favor do fundo comum.
+    A carência (vesting) é apurada depósito a depósito e não se aplica a quem chega à aposentadoria no plano.
+    <br><br>asset@chess.capital · chess.capital
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   Motor — porta 1:1 de simulador/comparativo_ir.py e engine.py
+   ============================================================ */
+const MESES_ANO = 12;
+const PCT_APORTE = 0.08;          // regime instituido: 8% do salario, so a instituicao
+const INF = Infinity;
+
+// (limite superior INCLUSIVO do prazo do aporte em anos, aliquota)
+const TABELA_REGRESSIVA_VGBL = [[2,.35],[4,.30],[6,.25],[8,.20],[10,.15],[INF,.10]];
+const ALIQUOTA_COME_COTAS = 0.15;
+const MESES_ENTRE_COME_COTAS = 6;
+const ALIQUOTA_COMPLEMENTO_FUNDO = 0.15;
+// (limite superior INCLUSIVO de meses desde o aporte, % ja liberado)
+const VESTING = [[12,0],[24,.20],[36,.40],[48,.60],[60,.80],[INF,1]];
+
+function lookup(v, faixas){ for(const [lim,res] of faixas){ if(v<=lim) return res; } return faixas[faixas.length-1][1]; }
+function taxaMensal(a){ return Math.pow(1+a, 1/MESES_ANO)-1; }
+function aliquotaVgbl(prazoMeses){ return lookup(prazoMeses/MESES_ANO, TABELA_REGRESSIVA_VGBL); }
+function vestingPct(mesesDesdeAporte){ return lookup(mesesDesdeAporte, VESTING); }
+
+function planoVgbl(aporte, anos, taxa){
+  const im = taxaMensal(taxa), out = [];
+  for(let ano=1; ano<=anos; ano++){
+    const m = ano*MESES_ANO;
+    let bruto=0, ir=0;
+    for(let k=1; k<=m; k++){
+      const prazo = m-k;
+      const valor = aporte*Math.pow(1+im, prazo);
+      bruto += valor;
+      ir += (valor-aporte)*aliquotaVgbl(prazo);
+    }
+    out.push({ano, bruto, ir, liquido: bruto-ir});
+  }
+  return out;
+}
+
+function fundoComeCotas(aporte, anos, taxa){
+  const im = taxaMensal(taxa);
+  let saldo=0, base=0, irPago=0;
+  const out=[];
+  for(let mes=1; mes<=anos*MESES_ANO; mes++){
+    saldo = saldo*(1+im) + aporte;
+    base += aporte;
+    if(mes % MESES_ENTRE_COME_COTAS === 0){
+      const trib = Math.max(0, saldo-base);
+      const imposto = trib*ALIQUOTA_COME_COTAS;
+      saldo -= imposto; irPago += imposto; base = saldo;
+    }
+    if(mes % MESES_ANO === 0){
+      const naoTrib = Math.max(0, saldo-base);
+      const irResg = naoTrib*ALIQUOTA_COMPLEMENTO_FUNDO;
+      out.push({ano:mes/MESES_ANO, bruto:saldo, irPago, irResgate:irResg,
+                liquido:saldo-irResg, irTotal:irPago+irResg});
+    }
+  }
+  return out;
+}
+
+/* Parcela nao vestida que volta a instituicao numa saida apos `anos`,
+   apurada aporte a aporte (espelha engine.recuperacao_patronal). */
+function recuperacaoPatronal(aporte, anos, taxa){
+  const n = anos*MESES_ANO, im = taxaMensal(taxa);
+  let recuperado=0, saldo=0;
+  for(let m=1; m<=n; m++){
+    const idadeMeses = n-m;
+    const valor = aporte*Math.pow(1+im, idadeMeses);
+    saldo += valor;
+    recuperado += valor*(1-vestingPct(idadeMeses));
+  }
+  return {recuperado, saldo};
+}
+
+/* ============================================================
+   Formatacao e estado
+   ============================================================ */
+const fmt0 = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
+const brl = v => 'R$ ' + fmt0.format(Math.round(v));
+const brlCurto = v => {
+  if(v >= 1e6) return 'R$ ' + (v/1e6).toFixed(1).replace('.',',') + ' mi';
+  if(v >= 1e4) return 'R$ ' + fmt0.format(Math.round(v/1000)) + ' mil';
+  return 'R$ ' + fmt0.format(Math.round(v));   // abaixo de 10 mil, sem arredondar para "mil"
+};
+
+function lerNum(el){ return parseFloat(String(el.value).replace(/\./g,'').replace(',','.')) || 0; }
+function mascaraMilhar(el){
+  const bruto = String(el.value).replace(/\D/g,'');
+  el.value = bruto ? fmt0.format(parseInt(bruto,10)) : '';
+}
+
+const $ = id => document.getElementById(id);
+
+function estado(){
+  const salario = lerNum($('sal'));
+  const idade = Math.round(lerNum($('idade')));
+  const alvo = Math.round(lerNum($('alvo')));
+  const taxa = lerNum($('taxa'))/100;
+  const anos = Math.max(0, alvo - idade);
+  return {salario, idade, alvo, taxa, anos};
+}
+
+/* ============================================================
+   Grafico de linha — SVG proprio, 2 series, crosshair + tooltip
+   ============================================================ */
+/* A geometria do grafico e escolhida pela largura disponivel. Num viewBox
+   estreito cada unidade vale mais pixels na tela, entao os rotulos ficam
+   legiveis no celular sem mudar tamanho de fonte em dois lugares. */
+function geometria(){
+  const cx = document.querySelector('.chartbox');
+  const larg = cx ? cx.clientWidth : 720;
+  return larg < 560
+    ? {W:430, H:380, M:{t:30, r:20, b:34, l:60}, fs:11.5, fsv:12.5, compacto:true}
+    : {W:720, H:360, M:{t:22, r:78, b:38, l:64}, fs:10.5, fsv:11,   compacto:false};
+}
+let W, H, M, FS, FSV, COMPACTO;
+
+/* Topo do eixo Y que produz rotulos redondos: o passo e 1, 2, 2,5 ou 5
+   vezes uma potencia de 10. Evita marcas como "R$ 413 mil". */
+function escalaAgradavel(maxValor, passos){
+  if(!(maxValor > 0)) return 1000;
+  const bruto = maxValor/passos;
+  const mag = Math.pow(10, Math.floor(Math.log10(bruto)));
+  const passo = [1, 1.5, 2, 2.5, 3, 4, 5, 10].map(m => m*mag).find(p => p >= bruto);
+  return passo*passos;
+}
+
+function desenharLinha(plano, fundo, anosBase){
+  const svg = $('svgLinha');
+  const n = plano.length;
+  if(n === 0){ svg.innerHTML = ''; return; }
+
+  const g = geometria();
+  W = g.W; H = g.H; M = g.M; FS = g.fs; FSV = g.fsv; COMPACTO = g.compacto;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const maxV = Math.max(plano[n-1].liquido, fundo[n-1].liquido);
+  const yMax = escalaAgradavel(maxV, 4);
+  const px = i => M.l + (W-M.l-M.r) * (n===1 ? 1 : i/(n-1));
+  const py = v => H-M.b - (H-M.t-M.b) * (v/yMax);
+
+  const linha = (arr, key) => arr.map((d,i)=> (i?'L':'M') + px(i).toFixed(1) + ' ' + py(d[key]).toFixed(1)).join(' ');
+
+  // gridlines horizontais recessivas + rotulos do eixo y
+  const passos = 4;
+  let grid = '', ticks = '';
+  for(let g=0; g<=passos; g++){
+    const v = yMax*g/passos, y = py(v);
+    grid += `<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}" stroke="rgba(16,36,63,.10)" stroke-width="1"/>`;
+    // no modo compacto o eixo dispensa o "R$ " — a legenda e a nota ja dizem que sao reais
+    const rot = v ? (COMPACTO ? brlCurto(v).replace('R$ ','') : brlCurto(v)) : '0';
+    ticks += `<text x="${M.l-9}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="${FS}" fill="#8C95A3" font-family="IBM Plex Mono, monospace">${rot}</text>`;
+  }
+
+  // eixo x: rotulos a cada ~5 anos
+  let xlab = '';
+  const passoX = n<=6 ? 1 : (n<=12 ? 2 : 5);
+  for(let i=0; i<n; i++){
+    const ano = i+1;
+    if(ano % passoX === 0 || i===n-1){
+      xlab += `<text x="${px(i).toFixed(1)}" y="${H-M.b+17}" text-anchor="middle" font-size="${FS}" fill="#8C95A3" font-family="IBM Plex Mono, monospace">${ano}</text>`;
+    }
+  }
+
+  const ultPlano = plano[n-1].liquido, ultFundo = fundo[n-1].liquido;
+  const colide = Math.abs(py(ultPlano)-py(ultFundo)) < 22;
+
+  /* Rotulos de ponta: a direita quando ha margem; no compacto vao para dentro
+     do grafico, acima e abaixo do ultimo ponto, para nao serem cortados. */
+  /* No compacto os valores finais vao para o canto superior esquerdo, que numa
+     curva crescente e sempre area vazia — evita cruzar as linhas. Com halo na
+     cor do painel por seguranca. */
+  const halo = 'stroke="#FAF6EC" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round"';
+  const rotPonta = COMPACTO
+    ? `<text x="${M.l+8}" y="${M.t-12}" font-size="${FS-1}" fill="#8C95A3" font-family="Inter, sans-serif">no ano ${n}</text>
+       <text x="${M.l+8}" y="${M.t+14}" font-size="${FSV+1}" font-weight="600" fill="#8B6525" ${halo} font-family="IBM Plex Mono, monospace">${brlCurto(ultPlano)}</text>
+       <text x="${M.l+8}" y="${M.t+34}" font-size="${FSV+1}" font-weight="600" fill="#3A6EA5" ${halo} font-family="IBM Plex Mono, monospace">${brlCurto(ultFundo)}</text>`
+    : `<text x="${px(n-1)+9}" y="${(py(ultPlano)+(colide?-4:3.5)).toFixed(1)}" font-size="${FSV}" font-weight="600" fill="#8B6525" font-family="IBM Plex Mono, monospace">${brlCurto(ultPlano)}</text>
+       <text x="${px(n-1)+9}" y="${(py(ultFundo)+(colide?13:3.5)).toFixed(1)}" font-size="${FSV}" font-weight="600" fill="#3A6EA5" font-family="IBM Plex Mono, monospace">${brlCurto(ultFundo)}</text>`;
+
+  svg.innerHTML = `
+    <title id="chartTitle">Patrimônio líquido projetado ao longo dos anos, dentro do plano e fora dele</title>
+    ${grid}${ticks}${xlab}
+    <line x1="${M.l}" y1="${H-M.b}" x2="${W-M.r}" y2="${H-M.b}" stroke="rgba(16,36,63,.28)" stroke-width="1"/>
+    <text x="${M.l}" y="${H-5}" font-size="${FS-.5}" fill="#8C95A3" font-family="Inter, sans-serif">anos de plano</text>
+    <path d="${linha(fundo,'liquido')}" fill="none" stroke="var(--s-fora)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${linha(plano,'liquido')}" fill="none" stroke="var(--s-plano)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${px(n-1)}" cy="${py(ultPlano)}" r="4" fill="var(--s-plano)" stroke="#FAF6EC" stroke-width="2"/>
+    <circle cx="${px(n-1)}" cy="${py(ultFundo)}" r="4" fill="var(--s-fora)" stroke="#FAF6EC" stroke-width="2"/>
+    ${rotPonta}
+    <g id="cross" style="opacity:0">
+      <line id="crossL" x1="0" y1="${M.t}" x2="0" y2="${H-M.b}" stroke="rgba(16,36,63,.35)" stroke-width="1" stroke-dasharray="3 3"/>
+      <circle id="crossP" r="5" fill="var(--s-plano)" stroke="#FAF6EC" stroke-width="2"/>
+      <circle id="crossF" r="5" fill="var(--s-fora)" stroke="#FAF6EC" stroke-width="2"/>
+    </g>
+    <rect id="hit" x="${M.l}" y="${M.t}" width="${W-M.l-M.r}" height="${H-M.t-M.b}" fill="transparent" style="cursor:crosshair"/>
+  `;
+
+  // ---- camada de hover
+  const tip = $('tip'), cross = svg.querySelector('#cross');
+  const box = svg.querySelector('#hit');
+  const mover = ev => {
+    const r = svg.getBoundingClientRect();
+    const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+    const xr = (cx - r.left) * (W / r.width);
+    let i = Math.round((xr - M.l) / ((W-M.l-M.r) / Math.max(1,n-1)));
+    i = Math.max(0, Math.min(n-1, i));
+    const X = px(i);
+    cross.style.opacity = 1;
+    svg.querySelector('#crossL').setAttribute('x1', X);
+    svg.querySelector('#crossL').setAttribute('x2', X);
+    svg.querySelector('#crossP').setAttribute('cx', X);
+    svg.querySelector('#crossP').setAttribute('cy', py(plano[i].liquido));
+    svg.querySelector('#crossF').setAttribute('cx', X);
+    svg.querySelector('#crossF').setAttribute('cy', py(fundo[i].liquido));
+    const dif = plano[i].liquido - fundo[i].liquido;
+    tip.innerHTML =
+      `<span class="tt">ano ${i+1}</span>` +
+      `<div class="tr"><span class="sw" style="background:var(--s-plano)"></span>No plano <b>${brl(plano[i].liquido)}</b></div>` +
+      `<div class="tr"><span class="sw" style="background:var(--s-fora)"></span>Fundo comum <b>${brl(fundo[i].liquido)}</b></div>` +
+      `<div class="tr" style="opacity:.75;margin-top:2px">Diferença <b>${dif>=0?'+':'−'}${brl(Math.abs(dif))}</b></div>`;
+    tip.style.opacity = 1;
+    const left = (X / W) * r.width;
+    tip.style.left = Math.min(Math.max(8, left - tip.offsetWidth/2), r.width - tip.offsetWidth - 8) + 'px';
+    tip.style.top = Math.max(4, (py(Math.max(plano[i].liquido, fundo[i].liquido)) / H) * r.height - tip.offsetHeight - 12) + 'px';
+  };
+  const sair = () => { cross.style.opacity = 0; tip.style.opacity = 0; };
+  box.addEventListener('mousemove', mover);
+  box.addEventListener('mouseleave', sair);
+  box.addEventListener('touchstart', mover, {passive:true});
+  box.addEventListener('touchmove', mover, {passive:true});
+  box.addEventListener('touchend', sair);
+}
+
+/* ============================================================
+   Formulario de intencao de adesao
+   ------------------------------------------------------------
+   TROQUE ESTA CONSTANTE pela URL do Google Forms quando ele
+   existir. E o unico ponto do arquivo que precisa mudar.
+   ============================================================ */
+const FORM_URL = '';   // ex.: 'https://forms.gle/xxxxxxxx'
+
+/* ============================================================
+   Render
+   ============================================================ */
+function render(){
+  const st = estado();
+  const aporte = st.salario * PCT_APORTE;
+
+  if(st.anos <= 0 || st.salario <= 0){
+    $('heroVal').textContent = '—';
+    $('heroDesc').textContent = st.anos <= 0
+      ? 'A idade de parar de trabalhar precisa ser maior que a sua idade de hoje.'
+      : 'Informe o seu salário mensal.';
+    $('kAporte').textContent = $('kTotal').textContent = $('kRenda').textContent = '—';
+    $('kTotalD').textContent = '—';
+    $('svgLinha').innerHTML = '';
+    $('capLinha').textContent = '—';
+    $('tabVesting').querySelector('tbody').innerHTML = '';
+    return;
+  }
+
+  const plano = planoVgbl(aporte, st.anos, st.taxa);
+  const fundo = fundoComeCotas(aporte, st.anos, st.taxa);
+  const fim = plano[st.anos-1], fimF = fundo[st.anos-1];
+  const depositado = aporte * MESES_ANO * st.anos;
+  const dif = fim.liquido - fimF.liquido;
+  const rendaMensal = fim.liquido * st.taxa / MESES_ANO;
+
+  $('heroVal').textContent = brl(fim.liquido);
+  $('heroDesc').innerHTML =
+    `Já descontado o imposto de renda. São <b>${st.anos} anos</b> de depósitos até os ${st.alvo} anos. ` +
+    `Saldo antes do imposto: <b>${brl(fim.bruto)}</b>.`;
+
+  $('kAporte').textContent = brl(aporte);
+  $('kTotal').textContent = brl(depositado);
+  $('kTotalD').textContent = `${st.anos} anos × 12 meses, sem custo para você`;
+  $('kRenda').textContent = brl(rendaMensal);
+
+  desenharLinha(plano, fundo, st.anos);
+
+  const sinal = dif >= 0 ? 'a mais' : 'a menos';
+  $('capLinha').innerHTML =
+    `As duas linhas partem do <b>mesmo depósito mensal de ${brl(aporte)}</b> e da mesma rentabilidade. ` +
+    `A diferença é só o imposto: no plano não há come-cotas e a alíquota cai com o tempo; ` +
+    `no fundo comum o imposto é cobrado a cada seis meses e deixa de render. ` +
+    `Em ${st.anos} anos isso dá <b>${brl(Math.abs(dif))} ${sinal}</b> para você. ` +
+    (dif < 0
+      ? `Neste prazo o plano ainda fica atrás: a alíquota do plano só cai para 10% depois de 10 anos <em>contados de cada depósito</em>, e em prazos curtos ela é alta. A vantagem aparece nos horizontes longos.`
+      : `A vantagem cresce com o tempo, porque o imposto que você não paga hoje continua rendendo.`);
+
+  // vesting — saidas antecipadas
+  const tbody = $('tabVesting').querySelector('tbody');
+  const marcos = [5,10,15,20].filter(a => a < st.anos);
+  if(marcos.length === 0) marcos.push(Math.max(1, Math.floor(st.anos/2)));
+  tbody.innerHTML = marcos.map(a => {
+    const r = recuperacaoPatronal(aporte, a, st.taxa);
+    const fica = r.saldo - r.recuperado;
+    return `<tr><td>${a} anos</td><td>${brl(r.saldo)}</td>` +
+           `<td class="gold">${brl(fica)} <span style="color:var(--ink-mute);font-size:10px">(${Math.round(fica/r.saldo*100)}%)</span></td>` +
+           `<td>${brl(r.recuperado)}</td></tr>`;
+  }).join('');
+
+  // CTA
+  const cta = $('ctaForm');
+  if(FORM_URL){
+    cta.href = FORM_URL;
+    $('ctaNote').textContent = 'Preencher não gera nenhum compromisso — é só para sabermos quem tem interesse.';
+  }else{
+    cta.href = '#';
+    cta.style.opacity = .45;
+    cta.style.pointerEvents = 'none';
+    $('ctaNote').innerHTML = '<b>Formulário ainda não publicado.</b> O link será ativado antes do evento.';
+  }
+}
+
+/* ============================================================
+   Autoteste — roda no carregamento e mostra o resultado na pagina.
+   Ancoras conferidas contra o Python (comparativo_ir.py / engine.py).
+   ============================================================ */
+function autoteste(){
+  const casos = [];
+  const quase = (a,b,tol) => Math.abs(a-b) <= tol;
+
+  // 1. tabela regressiva nos limites
+  casos.push(['aliq 24m=35%', aliquotaVgbl(24)===0.35]);
+  casos.push(['aliq 25m=30%', aliquotaVgbl(25)===0.30]);
+  casos.push(['aliq 120m=15%', aliquotaVgbl(120)===0.15]);
+  casos.push(['aliq 121m=10%', aliquotaVgbl(121)===0.10]);
+
+  // 2. taxa zero nao gera imposto
+  const p0 = planoVgbl(100, 3, 0), f0 = fundoComeCotas(100, 3, 0);
+  casos.push(['taxa 0 · plano', quase(p0[2].bruto, 3600, 1e-6) && quase(p0[2].ir, 0, 1e-9)]);
+  casos.push(['taxa 0 · fundo', quase(f0[2].bruto, 3600, 1e-6) && quase(f0[2].irTotal, 0, 1e-9)]);
+
+  // 3. ancoras do Python: aporte 400/mes, 8% a.a.
+  const p = planoVgbl(400, 20, 0.08), f = fundoComeCotas(400, 20, 0.08);
+  casos.push(['bruto 20a = 227.600', quase(p[19].bruto, 227600, 1)]);
+  casos.push(['liq plano 20a = 211.868', quase(p[19].liquido, 211868, 1)]);
+  casos.push(['liq fundo 20a = 198.020', quase(f[19].liquido, 198020, 1)]);
+  casos.push(['bruto 5a = 29.178', quase(p[4].bruto, 29178, 1)]);
+
+  // 4. ancora do one-pager (R$ 15.000 · 8% · 20 anos = 682.799)
+  const p15 = planoVgbl(15000*0.08, 20, 0.08);
+  casos.push(['one-pager 20a = 682.799', quase(p15[19].bruto, 682799, 1)]);
+
+  // 5. vesting: recuperacao estabiliza (~R$ 51 mil no cenario do one-pager)
+  const v = recuperacaoPatronal(1200, 20, 0.08);
+  casos.push(['vesting 20a = 51.353', quase(v.recuperado, 51353, 1)]);
+
+  const falhas = casos.filter(c => !c[1]);
+  const el = $('selftest');
+  el.className = 'selftest' + (falhas.length ? '' : ' ok');
+  el.innerHTML = falhas.length
+    ? `autoteste: ${casos.length-falhas.length}/${casos.length} · <span class="x">FALHOU: ${falhas.map(f=>f[0]).join(', ')}</span>`
+    : `autoteste ${casos.length}/${casos.length} ok · motor confere com o cálculo em Python`;
+}
+
+['sal','idade','alvo','taxa'].forEach(id => {
+  const el = $(id);
+  el.addEventListener('input', () => { if(id==='sal') mascaraMilhar(el); render(); });
+});
+/* Redesenha ao mudar a largura: a geometria do grafico depende dela
+   (girar o celular troca o viewBox compacto pelo largo). */
+let redimT;
+window.addEventListener('resize', () => { clearTimeout(redimT); redimT = setTimeout(render, 140); });
+
+mascaraMilhar($('sal'));
+render();
+autoteste();
+</script>
+</body>
+</html>
