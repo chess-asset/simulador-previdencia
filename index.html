@@ -201,7 +201,24 @@
       <div class="kpis">
         <div class="kpi"><div class="k">Depósito mensal</div><div class="v" id="kAporte">—</div><div class="d" id="kAporteD">—</div></div>
         <div class="kpi"><div class="k">Total depositado</div><div class="v" id="kTotal">—</div><div class="d" id="kTotalD">—</div></div>
-        <div class="kpi"><div class="k">Renda mensal estimada</div><div class="v" id="kRenda">—</div><div class="d">se você retirar só o rendimento</div></div>
+        <div class="kpi"><div class="k">Renda mensal por 20 anos</div><div class="v" id="kRenda">—</div><div class="d" id="kRendaD">—</div></div>
+      </div>
+
+      <div class="panel" style="margin-top:17px">
+        <h2 class="sec">Quanto isso vira de renda por mês</h2>
+        <div class="tabwrap">
+          <table class="tb" id="tabRenda">
+            <thead><tr><th>Se você receber</th><th>Por mês</th><th>Sobra no fim</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note">
+          Valores em dinheiro de hoje, porque a projeção já é líquida de inflação — o poder de
+          compra da renda se mantém ao longo dos anos.
+          <b>Esta é uma conta ilustrativa, não a renda que a seguradora paga:</b> a renda contratada
+          num plano de previdência é calculada pela tábua atuarial da seguradora, definida no
+          regulamento. Serve para dar ordem de grandeza antes de você conversar com eles.
+        </p>
       </div>
 
       <div class="panel" style="margin-top:17px">
@@ -332,6 +349,18 @@ function fundoComeCotas(aporte, anos, taxa){
     }
   }
   return out;
+}
+
+/* Retirada mensal que consome so o rendimento (o principal fica de pe). */
+function rendaPerpetua(saldo, taxa){ return saldo * taxaMensal(taxa); }
+
+/* Retirada mensal constante que zera o saldo em `anos` (anuidade postecipada).
+   ILUSTRATIVO: a renda contratada sai da tabua atuarial da seguradora. */
+function rendaPrazoDefinido(saldo, anos, taxa){
+  const i = taxaMensal(taxa), n = anos * MESES_ANO;
+  if(n <= 0) return 0;
+  if(i === 0) return saldo / n;
+  return saldo * i / (1 - Math.pow(1 + i, -n));
 }
 
 /* Parcela nao vestida que volta a instituicao numa saida apos `anos`,
@@ -539,7 +568,8 @@ function render(){
       ? 'A idade de parar de trabalhar precisa ser maior que a sua idade de hoje.'
       : 'Informe o seu salário mensal.';
     $('kAporte').textContent = $('kTotal').textContent = $('kRenda').textContent = '—';
-    $('kAporteD').textContent = $('kTotalD').textContent = '—';
+    $('kAporteD').textContent = $('kTotalD').textContent = $('kRendaD').textContent = '—';
+    $('tabRenda').querySelector('tbody').innerHTML = '';
     $('svgLinha').innerHTML = '';
     $('capLinha').textContent = '—';
     $('tabVesting').querySelector('tbody').innerHTML = '';
@@ -551,7 +581,6 @@ function render(){
   const fim = plano[st.anos-1], fimF = fundo[st.anos-1];
   const depositado = aporte * MESES_ANO * st.anos;
   const dif = fim.liquido - fimF.liquido;
-  const rendaMensal = fim.liquido * st.taxa / MESES_ANO;
 
   $('heroVal').textContent = brl(fim.liquido);
   $('heroDesc').innerHTML =
@@ -566,7 +595,18 @@ function render(){
   $('kTotalD').textContent = st.proprio > 0
     ? `${st.anos} anos × 12 meses, sendo ${brl(comp.voluntario * MESES_ANO * st.anos)} do seu bolso`
     : `${st.anos} anos × 12 meses, sem custo para você`;
-  $('kRenda').textContent = brl(rendaMensal);
+  $('kRenda').textContent = brl(rendaPrazoDefinido(fim.liquido, 20, st.taxa));
+  $('kRendaD').textContent = 'consumindo o saldo ao longo do período';
+
+  // renda: prazos definidos + a alternativa de viver so do rendimento
+  $('tabRenda').querySelector('tbody').innerHTML =
+    [15, 20, 25].map(a =>
+      `<tr><td>Durante ${a} anos</td>` +
+      `<td class="gold">${brl(rendaPrazoDefinido(fim.liquido, a, st.taxa))}</td>` +
+      `<td>R$ 0</td></tr>`).join('') +
+    `<tr><td>Para sempre, só o rendimento</td>` +
+    `<td class="gold">${brl(rendaPerpetua(fim.liquido, st.taxa))}</td>` +
+    `<td>${brl(fim.liquido)}</td></tr>`;
 
   desenharLinha(plano, fundo, st.anos);
 
@@ -666,7 +706,15 @@ function autoteste(){
   casos.push(['moeda 1.234.567', lerMoeda(campo('1.234.567')) === 1234567]);
   casos.push(['moeda vazia = 0', lerMoeda(campo('')) === 0]);
 
-  // 9. somar as parcelas = projetar o total de uma vez (mesmo regime tributario)
+  // 9. renda: sacar a PMT por n meses tem de zerar o saldo
+  const pmt = rendaPrazoDefinido(500000, 20, 0.08);
+  let sd = 500000, im20 = taxaMensal(0.08);
+  for(let m=0; m<240; m++) sd = sd*(1+im20) - pmt;
+  casos.push(['renda 20a zera o saldo', Math.abs(sd) < 0.01]);
+  casos.push(['renda 20a > perpetua', pmt > rendaPerpetua(500000, 0.08)]);
+  casos.push(['renda taxa 0', rendaPrazoDefinido(120000, 10, 0) === 1000]);
+
+  // 10. somar as parcelas = projetar o total de uma vez (mesmo regime tributario)
   const j = planoVgbl(650, 15, 0.08)[14];
   const s1 = planoVgbl(400, 15, 0.08)[14], s2 = planoVgbl(250, 15, 0.08)[14];
   casos.push(['parcelas somam', quase(j.bruto, s1.bruto+s2.bruto, .01) && quase(j.ir, s1.ir+s2.ir, .01)]);
