@@ -154,7 +154,8 @@
         </div>
         <div class="field">
           <label for="taxa">Rentabilidade estimada</label>
-          <div class="ctl"><input id="taxa" class="num-s" type="number" min="0" max="30" step="0.5" value="8"><span class="suffix">% a.a.</span></div>
+          <!-- texto, nao number: `type=number` recusa a virgula do teclado pt-BR -->
+          <div class="ctl"><input id="taxa" class="num-s" type="text" inputmode="decimal" value="8"><span class="suffix">% a.a.</span></div>
         </div>
         <div class="field" style="border-top:1px solid var(--rule-strong);margin-top:6px;padding-top:12px">
           <label for="prop">Quanto <b>você</b> quer aportar<br>por mês <span style="color:var(--ink-mute)">(opcional)</span></label>
@@ -349,7 +350,14 @@ const brlCurto = v => {
   return 'R$ ' + fmt0.format(Math.round(v));   // abaixo de 10 mil, sem arredondar para "mil"
 };
 
-function lerNum(el){ return parseFloat(String(el.value).replace(/\./g,'').replace(',','.')) || 0; }
+/* Dois tipos de campo, duas leituras — nao dao para compartilhar a mesma funcao:
+   nos campos de dinheiro o ponto e separador de MILHAR (5.000 = cinco mil), nos
+   demais ele e separador DECIMAL (9.5 = nove e meio). */
+function lerMoeda(el){ return parseInt(String(el.value).replace(/\D/g,''), 10) || 0; }
+function lerDecimal(el){
+  // aceita virgula ou ponto: o brasileiro digita "9,5" e o teclado numerico manda "9.5"
+  return parseFloat(String(el.value).trim().replace(',', '.')) || 0;
+}
 function mascaraMilhar(el){
   const bruto = String(el.value).replace(/\D/g,'');
   el.value = bruto ? fmt0.format(parseInt(bruto,10)) : '';
@@ -358,11 +366,11 @@ function mascaraMilhar(el){
 const $ = id => document.getElementById(id);
 
 function estado(){
-  const salario = lerNum($('sal'));
-  const idade = Math.round(lerNum($('idade')));
-  const alvo = Math.round(lerNum($('alvo')));
-  const taxa = lerNum($('taxa'))/100;
-  const proprio = Math.max(0, lerNum($('prop')));
+  const salario = lerMoeda($('sal'));
+  const idade = Math.round(lerDecimal($('idade')));
+  const alvo = Math.round(lerDecimal($('alvo')));
+  const taxa = Math.min(100, Math.max(0, lerDecimal($('taxa')))) / 100;
+  const proprio = Math.max(0, lerMoeda($('prop')));
   const anos = Math.max(0, alvo - idade);
   return {salario, idade, alvo, taxa, proprio, anos};
 }
@@ -638,7 +646,18 @@ function autoteste(){
   const rB = recuperacaoPatronal(composicao(5000, 500).patronal, 10, 0.08).recuperado;
   casos.push(['carencia so no patronal', quase(rA, rB, 1e-9)]);
 
-  // 8. somar as parcelas = projetar o total de uma vez (mesmo regime tributario)
+  // 8. leitura dos campos: o ponto e milhar no dinheiro e decimal na taxa.
+  //    Regressao de 29/07 — "9,5%" estava sendo lido errado.
+  const campo = v => ({value: v});
+  casos.push(['taxa 9,5 = 9.5',  lerDecimal(campo('9,5')) === 9.5]);
+  casos.push(['taxa 9.5 = 9.5',  lerDecimal(campo('9.5')) === 9.5]);
+  casos.push(['taxa 12,75',      lerDecimal(campo('12,75')) === 12.75]);
+  casos.push(['taxa vazia = 0',  lerDecimal(campo('')) === 0]);
+  casos.push(['moeda 5.000',     lerMoeda(campo('5.000')) === 5000]);
+  casos.push(['moeda 1.234.567', lerMoeda(campo('1.234.567')) === 1234567]);
+  casos.push(['moeda vazia = 0', lerMoeda(campo('')) === 0]);
+
+  // 9. somar as parcelas = projetar o total de uma vez (mesmo regime tributario)
   const j = planoVgbl(650, 15, 0.08)[14];
   const s1 = planoVgbl(400, 15, 0.08)[14], s2 = planoVgbl(250, 15, 0.08)[14];
   casos.push(['parcelas somam', quase(j.bruto, s1.bruto+s2.bruto, .01) && quase(j.ir, s1.ir+s2.ir, .01)]);
