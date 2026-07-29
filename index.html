@@ -57,6 +57,8 @@
     border:1px solid var(--rule-strong);padding:7px 8px;border-radius:0;text-align:right}
   input:focus{outline:2px solid var(--gold-soft);outline-offset:-1px}
   input.num-s{width:64px} input.num-l{width:112px}
+  .fixedval{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);
+    padding:7px 9px;background:var(--paper-2);border:1px solid var(--rule);display:inline-block}
   .suffix{font-size:11px;color:var(--ink-mute);font-family:'IBM Plex Mono',monospace}
   .hint{font-size:10.5px;line-height:1.5;color:var(--ink-mute);margin-top:10px;padding-top:9px;border-top:1px dotted var(--rule)}
 
@@ -153,17 +155,18 @@
           <div class="ctl"><input id="alvo" class="num-s" type="number" min="17" max="85" value="65"><span class="suffix">anos</span></div>
         </div>
         <div class="field">
-          <label for="taxa">Rentabilidade estimada</label>
-          <!-- texto, nao number: `type=number` recusa a virgula do teclado pt-BR -->
-          <div class="ctl"><input id="taxa" class="num-s" type="text" inputmode="decimal" value="8"><span class="suffix">% a.a.</span></div>
+          <label>Rentabilidade da projeção<br><span style="color:var(--ink-mute);font-size:10.5px">já líquida de inflação e custos</span></label>
+          <div class="ctl"><span class="fixedval">8% a.a.</span></div>
         </div>
         <div class="field" style="border-top:1px solid var(--rule-strong);margin-top:6px;padding-top:12px">
           <label for="prop">Quanto <b>você</b> quer aportar<br>por mês <span style="color:var(--ink-mute)">(opcional)</span></label>
           <div class="ctl"><span class="suffix">R$</span><input id="prop" class="num-l" inputmode="numeric" value="0"></div>
         </div>
         <p class="hint">
-          A rentabilidade é uma <b>premissa de projeção</b>, não uma promessa. Rendimento passado
-          não garante rendimento futuro, e o valor final pode ser maior ou menor.
+          A rentabilidade é uma <b>premissa fixa da projeção</b>, não uma promessa: rendimento
+          passado não garante rendimento futuro e o valor final pode ser maior ou menor.
+          Por já estar líquida de inflação, os valores abaixo aparecem no
+          <b>poder de compra de hoje</b> — é o que o dinheiro compraria hoje, não um número inflado.
           O que <b>você</b> aportar é sempre 100% seu, sem carência.
         </p>
       </div>
@@ -177,6 +180,7 @@
           <tr><td>Carência (vesting)</td><td>só sobre o patronal</td></tr>
           <tr><td>Tipo de plano</td><td>VGBL</td></tr>
           <tr><td>Imposto de renda</td><td>35% → 10%</td></tr>
+          <tr><td>Rentabilidade</td><td>8% a.a. real</td></tr>
           <tr><td>Prazo de resgate</td><td>120 dias</td></tr>
         </table>
         </div>
@@ -244,8 +248,9 @@
   <div id="selftest"></div>
 
   <footer class="legal">
-    Valores nominais e ilustrativos, projetados com a rentabilidade informada, aporte mensal e
-    capitalização mensal equivalente à taxa anual efetiva. Não constituem promessa de rentabilidade
+    Valores ilustrativos, projetados com premissa fixa de rentabilidade de 8% ao ano <b>já líquida
+    de inflação e de custos</b> — ou seja, expressos em poder de compra de hoje —, com aporte mensal
+    e capitalização mensal equivalente à taxa anual efetiva. Não constituem promessa de rentabilidade
     nem oferta de plano de previdência. Plano VGBL com instituidor pessoa jurídica (regime instituído
     — o depósito é integralmente da instituição), operado por seguradora habilitada pela SUSEP;
     a Chess Capital atua como gestora do veículo de investimento.
@@ -264,6 +269,10 @@
    ============================================================ */
 const MESES_ANO = 12;
 const PCT_APORTE = 0.08;          // parcela da instituicao: 8% do salario
+/* Rentabilidade da projecao: premissa FIXA do plano, nao editavel pelo colaborador.
+   E um retorno REAL — ja liquido de inflacao e de custos —, entao todos os valores
+   projetados saem em poder de compra de hoje. */
+const TAXA_FIXA = 0.08;
 const INF = Infinity;
 
 /* Composicao do aporte mensal. As duas parcelas entram no MESMO plano e tem
@@ -369,7 +378,7 @@ function estado(){
   const salario = lerMoeda($('sal'));
   const idade = Math.round(lerDecimal($('idade')));
   const alvo = Math.round(lerDecimal($('alvo')));
-  const taxa = Math.min(100, Math.max(0, lerDecimal($('taxa')))) / 100;
+  const taxa = TAXA_FIXA;
   const proprio = Math.max(0, lerMoeda($('prop')));
   const anos = Math.max(0, alvo - idade);
   return {salario, idade, alvo, taxa, proprio, anos};
@@ -546,8 +555,8 @@ function render(){
 
   $('heroVal').textContent = brl(fim.liquido);
   $('heroDesc').innerHTML =
-    `Já descontado o imposto de renda. São <b>${st.anos} anos</b> de depósitos até os ${st.alvo} anos. ` +
-    `Saldo antes do imposto: <b>${brl(fim.bruto)}</b>.`;
+    `Já descontado o imposto de renda, e <b>em dinheiro de hoje</b>. São <b>${st.anos} anos</b> ` +
+    `de depósitos até os ${st.alvo} anos. Saldo antes do imposto: <b>${brl(fim.bruto)}</b>.`;
 
   $('kAporte').textContent = brl(aporte);
   $('kAporteD').innerHTML = st.proprio > 0
@@ -670,7 +679,7 @@ function autoteste(){
     : `autoteste ${casos.length}/${casos.length} ok · motor confere com o cálculo em Python`;
 }
 
-['sal','idade','alvo','taxa','prop'].forEach(id => {
+['sal','idade','alvo','prop'].forEach(id => {
   const el = $(id);
   el.addEventListener('input', () => { if(id==='sal'||id==='prop') mascaraMilhar(el); render(); });
 });
