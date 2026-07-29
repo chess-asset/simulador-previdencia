@@ -130,8 +130,9 @@
 
   <p class="lead">
     A instituição passa a depositar <b>8% do seu salário</b> todos os meses numa conta de
-    previdência aberta no seu nome. O dinheiro não sai do seu bolso. Preencha os campos
-    ao lado para ver quanto isso pode virar até você parar de trabalhar.
+    previdência aberta no seu nome — sem sair do seu bolso. Se quiser, você pode aportar
+    por cima o quanto quiser: <b>essa parte é sempre 100% sua</b>. Preencha os campos ao
+    lado para ver quanto isso pode virar até você parar de trabalhar.
   </p>
 
   <div class="grid">
@@ -155,9 +156,14 @@
           <label for="taxa">Rentabilidade estimada</label>
           <div class="ctl"><input id="taxa" class="num-s" type="number" min="0" max="30" step="0.5" value="8"><span class="suffix">% a.a.</span></div>
         </div>
+        <div class="field" style="border-top:1px solid var(--rule-strong);margin-top:6px;padding-top:12px">
+          <label for="prop">Quanto <b>você</b> quer aportar<br>por mês <span style="color:var(--ink-mute)">(opcional)</span></label>
+          <div class="ctl"><span class="suffix">R$</span><input id="prop" class="num-l" inputmode="numeric" value="0"></div>
+        </div>
         <p class="hint">
           A rentabilidade é uma <b>premissa de projeção</b>, não uma promessa. Rendimento passado
           não garante rendimento futuro, e o valor final pode ser maior ou menor.
+          O que <b>você</b> aportar é sempre 100% seu, sem carência.
         </p>
       </div>
 
@@ -165,8 +171,9 @@
         <h2 class="sec">Regras do plano</h2>
         <div class="tabwrap">
         <table class="tb">
-          <tr><td>Quem deposita</td><td>a instituição</td></tr>
-          <tr><td>Quanto</td><td>8% do salário</td></tr>
+          <tr><td>Depósito da instituição</td><td>8% do salário</td></tr>
+          <tr><td>Seu depósito</td><td>opcional, livre</td></tr>
+          <tr><td>Carência (vesting)</td><td>só sobre o patronal</td></tr>
           <tr><td>Tipo de plano</td><td>VGBL</td></tr>
           <tr><td>Imposto de renda</td><td>35% → 10%</td></tr>
           <tr><td>Prazo de resgate</td><td>120 dias</td></tr>
@@ -187,7 +194,7 @@
       </div>
 
       <div class="kpis">
-        <div class="kpi"><div class="k">Depósito mensal</div><div class="v" id="kAporte">—</div><div class="d">feito pela instituição, no seu nome</div></div>
+        <div class="kpi"><div class="k">Depósito mensal</div><div class="v" id="kAporte">—</div><div class="d" id="kAporteD">—</div></div>
         <div class="kpi"><div class="k">Total depositado</div><div class="v" id="kTotal">—</div><div class="d" id="kTotalD">—</div></div>
         <div class="kpi"><div class="k">Renda mensal estimada</div><div class="v" id="kRenda">—</div><div class="d">se você retirar só o rendimento</div></div>
       </div>
@@ -216,10 +223,12 @@
           </table>
         </div>
         <p class="note">
-          Cada depósito tem um prazo próprio de carência: nada no 1º ano, e 100% a partir do 6º ano
-          contado daquele depósito. Por isso os depósitos mais antigos já são inteiramente seus e
-          os mais recentes ainda não. <b>Ao chegar na idade de aposentadoria, 100% do saldo é seu</b> —
-          a carência só vale para quem sai antes.
+          A carência incide <b>somente sobre os depósitos da instituição</b>: cada um tem prazo próprio
+          — nada no 1º ano, 100% a partir do 6º, contado daquele depósito. Os mais antigos já são
+          inteiramente seus; os mais recentes ainda não.
+          <b id="notaProp"></b>
+          <b>Ao chegar na idade de aposentadoria, 100% do saldo é seu</b> — a carência só vale para
+          quem sai antes.
         </p>
       </div>
 
@@ -253,8 +262,16 @@
    Motor — porta 1:1 de simulador/comparativo_ir.py e engine.py
    ============================================================ */
 const MESES_ANO = 12;
-const PCT_APORTE = 0.08;          // regime instituido: 8% do salario, so a instituicao
+const PCT_APORTE = 0.08;          // parcela da instituicao: 8% do salario
 const INF = Infinity;
+
+/* Composicao do aporte mensal. As duas parcelas entram no MESMO plano e tem
+   tratamento tributario identico; a diferenca esta na CARENCIA, que so alcanca
+   a parcela patronal — o que o colaborador aporta e sempre 100% dele. */
+function composicao(salario, aporteProprio){
+  const patronal = salario * PCT_APORTE;
+  return { patronal, voluntario: aporteProprio, total: patronal + aporteProprio };
+}
 
 // (limite superior INCLUSIVO do prazo do aporte em anos, aliquota)
 const TABELA_REGRESSIVA_VGBL = [[2,.35],[4,.30],[6,.25],[8,.20],[10,.15],[INF,.10]];
@@ -345,8 +362,9 @@ function estado(){
   const idade = Math.round(lerNum($('idade')));
   const alvo = Math.round(lerNum($('alvo')));
   const taxa = lerNum($('taxa'))/100;
+  const proprio = Math.max(0, lerNum($('prop')));
   const anos = Math.max(0, alvo - idade);
-  return {salario, idade, alvo, taxa, anos};
+  return {salario, idade, alvo, taxa, proprio, anos};
 }
 
 /* ============================================================
@@ -360,7 +378,8 @@ function geometria(){
   const larg = cx ? cx.clientWidth : 720;
   return larg < 560
     ? {W:430, H:380, M:{t:30, r:20, b:34, l:60}, fs:11.5, fsv:12.5, compacto:true}
-    : {W:720, H:360, M:{t:22, r:78, b:38, l:64}, fs:10.5, fsv:11,   compacto:false};
+    // margem esquerda dimensionada para o maior rotulo possivel ("R$ 1,0 mi")
+    : {W:720, H:360, M:{t:22, r:78, b:38, l:86}, fs:10.5, fsv:11,   compacto:false};
 }
 let W, H, M, FS, FSV, COMPACTO;
 
@@ -494,7 +513,8 @@ const FORM_URL = '';   // ex.: 'https://forms.gle/xxxxxxxx'
    ============================================================ */
 function render(){
   const st = estado();
-  const aporte = st.salario * PCT_APORTE;
+  const comp = composicao(st.salario, st.proprio);
+  const aporte = comp.total;
 
   if(st.anos <= 0 || st.salario <= 0){
     $('heroVal').textContent = '—';
@@ -502,7 +522,7 @@ function render(){
       ? 'A idade de parar de trabalhar precisa ser maior que a sua idade de hoje.'
       : 'Informe o seu salário mensal.';
     $('kAporte').textContent = $('kTotal').textContent = $('kRenda').textContent = '—';
-    $('kTotalD').textContent = '—';
+    $('kAporteD').textContent = $('kTotalD').textContent = '—';
     $('svgLinha').innerHTML = '';
     $('capLinha').textContent = '—';
     $('tabVesting').querySelector('tbody').innerHTML = '';
@@ -522,8 +542,13 @@ function render(){
     `Saldo antes do imposto: <b>${brl(fim.bruto)}</b>.`;
 
   $('kAporte').textContent = brl(aporte);
+  $('kAporteD').innerHTML = st.proprio > 0
+    ? `${brl(comp.patronal)} da instituição + <b>${brl(comp.voluntario)} seus</b>`
+    : 'feito pela instituição, no seu nome';
   $('kTotal').textContent = brl(depositado);
-  $('kTotalD').textContent = `${st.anos} anos × 12 meses, sem custo para você`;
+  $('kTotalD').textContent = st.proprio > 0
+    ? `${st.anos} anos × 12 meses, sendo ${brl(comp.voluntario * MESES_ANO * st.anos)} do seu bolso`
+    : `${st.anos} anos × 12 meses, sem custo para você`;
   $('kRenda').textContent = brl(rendaMensal);
 
   desenharLinha(plano, fundo, st.anos);
@@ -538,17 +563,23 @@ function render(){
       ? `Neste prazo o plano ainda fica atrás: a alíquota do plano só cai para 10% depois de 10 anos <em>contados de cada depósito</em>, e em prazos curtos ela é alta. A vantagem aparece nos horizontes longos.`
       : `A vantagem cresce com o tempo, porque o imposto que você não paga hoje continua rendendo.`);
 
-  // vesting — saidas antecipadas
+  // carencia — saidas antecipadas.
+  // So a parcela PATRONAL entra no vesting; o saldo total inclui o aporte proprio,
+  // que e integralmente do colaborador desde o primeiro dia.
   const tbody = $('tabVesting').querySelector('tbody');
   const marcos = [5,10,15,20].filter(a => a < st.anos);
   if(marcos.length === 0) marcos.push(Math.max(1, Math.floor(st.anos/2)));
   tbody.innerHTML = marcos.map(a => {
-    const r = recuperacaoPatronal(aporte, a, st.taxa);
-    const fica = r.saldo - r.recuperado;
-    return `<tr><td>${a} anos</td><td>${brl(r.saldo)}</td>` +
-           `<td class="gold">${brl(fica)} <span style="color:var(--ink-mute);font-size:10px">(${Math.round(fica/r.saldo*100)}%)</span></td>` +
+    const r = recuperacaoPatronal(comp.patronal, a, st.taxa);
+    const saldoTotal = planoVgbl(aporte, a, st.taxa)[a-1].bruto;
+    const fica = saldoTotal - r.recuperado;
+    return `<tr><td>${a} anos</td><td>${brl(saldoTotal)}</td>` +
+           `<td class="gold">${brl(fica)} <span style="color:var(--ink-mute);font-size:10px">(${Math.round(fica/saldoTotal*100)}%)</span></td>` +
            `<td>${brl(r.recuperado)}</td></tr>`;
   }).join('');
+  $('notaProp').textContent = st.proprio > 0
+    ? ' O que você aporta não tem carência nenhuma: é 100% seu desde o primeiro depósito. '
+    : '';
 
   // CTA
   const cta = $('ctaForm');
@@ -597,6 +628,21 @@ function autoteste(){
   const v = recuperacaoPatronal(1200, 20, 0.08);
   casos.push(['vesting 20a = 51.353', quase(v.recuperado, 51353, 1)]);
 
+  // 6. composicao do aporte
+  const cp = composicao(5000, 250);
+  casos.push(['composicao 400+250', cp.patronal===400 && cp.voluntario===250 && cp.total===650]);
+
+  // 7. a carencia nao pode alcancar o aporte proprio: dobrar o que o colaborador
+  //    poe nao muda em nada o que volta para a instituicao
+  const rA = recuperacaoPatronal(composicao(5000, 0).patronal, 10, 0.08).recuperado;
+  const rB = recuperacaoPatronal(composicao(5000, 500).patronal, 10, 0.08).recuperado;
+  casos.push(['carencia so no patronal', quase(rA, rB, 1e-9)]);
+
+  // 8. somar as parcelas = projetar o total de uma vez (mesmo regime tributario)
+  const j = planoVgbl(650, 15, 0.08)[14];
+  const s1 = planoVgbl(400, 15, 0.08)[14], s2 = planoVgbl(250, 15, 0.08)[14];
+  casos.push(['parcelas somam', quase(j.bruto, s1.bruto+s2.bruto, .01) && quase(j.ir, s1.ir+s2.ir, .01)]);
+
   const falhas = casos.filter(c => !c[1]);
   const el = $('selftest');
   el.className = 'selftest' + (falhas.length ? '' : ' ok');
@@ -605,9 +651,9 @@ function autoteste(){
     : `autoteste ${casos.length}/${casos.length} ok · motor confere com o cálculo em Python`;
 }
 
-['sal','idade','alvo','taxa'].forEach(id => {
+['sal','idade','alvo','taxa','prop'].forEach(id => {
   const el = $(id);
-  el.addEventListener('input', () => { if(id==='sal') mascaraMilhar(el); render(); });
+  el.addEventListener('input', () => { if(id==='sal'||id==='prop') mascaraMilhar(el); render(); });
 });
 /* Redesenha ao mudar a largura: a geometria do grafico depende dela
    (girar o celular troca o viewBox compacto pelo largo). */
@@ -615,6 +661,7 @@ let redimT;
 window.addEventListener('resize', () => { clearTimeout(redimT); redimT = setTimeout(render, 140); });
 
 mascaraMilhar($('sal'));
+mascaraMilhar($('prop'));
 render();
 autoteste();
 </script>
