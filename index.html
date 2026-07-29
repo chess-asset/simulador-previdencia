@@ -225,6 +225,7 @@
         <h2 class="sec">Com o plano × por conta própria</h2>
         <figure>
           <div class="legend">
+            <span class="li"><span class="sw" style="background:#8C95A3;height:2px;border-radius:0"></span>Se não houvesse imposto nenhum</span>
             <span class="li"><span class="sw" style="background:var(--s-plano)"></span>No plano de previdência</span>
             <span class="li"><span class="sw" style="background:var(--s-fora)"></span>Mesmo valor num fundo comum</span>
           </div>
@@ -305,6 +306,9 @@ const TABELA_REGRESSIVA_VGBL = [[2,.35],[4,.30],[6,.25],[8,.20],[10,.15],[INF,.1
 const ALIQUOTA_COME_COTAS = 0.15;
 const MESES_ENTRE_COME_COTAS = 6;
 const ALIQUOTA_COMPLEMENTO_FUNDO = 0.15;
+/* Inflacao usada para converter o retorno real em nominal: o IR — come-cotas e
+   tabela regressiva — incide sobre o ganho NOMINAL, nunca sobre o real. */
+const INFLACAO = 0.045;
 // (limite superior INCLUSIVO de meses desde o aporte, % ja liberado)
 const VESTING = [[12,0],[24,.20],[36,.40],[48,.60],[60,.80],[INF,1]];
 
@@ -347,6 +351,54 @@ function fundoComeCotas(aporte, anos, taxa){
       out.push({ano:mes/MESES_ANO, bruto:saldo, irPago, irResgate:irResg,
                 liquido:saldo-irResg, irTotal:irPago+irResg});
     }
+  }
+  return out;
+}
+
+/* Trajetoria anual dos dois caminhos, em PODER DE COMPRA DE HOJE.
+   Porta 1:1 de comparativo_ir.projecao. Substitui o uso direto de planoVgbl/
+   fundoComeCotas com a taxa real, que subestimava os dois impostos — e muito
+   mais o do fundo, porque o come-cotas sai cedo e deixa de compor. */
+function projecao(aporteReal, anos, taxaReal, inflacao){
+  const iNom = (1 + taxaReal) * (1 + inflacao) - 1;
+  const im = taxaMensal(iNom), inflM = taxaMensal(inflacao);
+  const n = anos * MESES_ANO;
+
+  const ap = [];
+  for(let k = 1; k <= n; k++) ap.push(aporteReal * Math.pow(1 + inflM, k - 1));
+
+  // fundo: passagem unica, come-cotas semestral sobre o ganho nominal
+  const fundoAno = {};
+  let saldo = 0, base = 0, irPago = 0;
+  for(let mes = 1; mes <= n; mes++){
+    saldo = saldo * (1 + im) + ap[mes-1];
+    base += ap[mes-1];
+    if(mes % MESES_ENTRE_COME_COTAS === 0){
+      const imposto = Math.max(0, saldo - base) * ALIQUOTA_COME_COTAS;
+      saldo -= imposto; irPago += imposto; base = saldo;
+    }
+    if(mes % MESES_ANO === 0){
+      const irResg = Math.max(0, saldo - base) * ALIQUOTA_COMPLEMENTO_FUNDO;
+      fundoAno[mes / MESES_ANO] = [saldo - irResg, irPago + irResg];
+    }
+  }
+
+  const out = [];
+  for(let ano = 1; ano <= anos; ano++){
+    const m = ano * MESES_ANO, defl = Math.pow(1 + inflacao, ano);
+    let bruto = 0, ir = 0;
+    for(let k = 1; k <= m; k++){
+      const prazo = m - k;
+      const valor = ap[k-1] * Math.pow(1 + im, prazo);
+      bruto += valor;
+      ir += (valor - ap[k-1]) * aliquotaVgbl(prazo);
+    }
+    const [fLiq, fIr] = fundoAno[ano];
+    const planoLiq = (bruto - ir) / defl, fundoLiq = fLiq / defl;
+    out.push({ano, depositado: aporteReal * MESES_ANO * ano,
+              planoBruto: bruto / defl, planoIr: ir / defl, planoLiquido: planoLiq,
+              fundoLiquido: fundoLiq, fundoIr: fIr / defl,
+              diferenca: planoLiq - fundoLiq});
   }
   return out;
 }
@@ -439,21 +491,22 @@ function escalaAgradavel(maxValor, passos){
   return passo*passos;
 }
 
-function desenharLinha(plano, fundo, anosBase){
+function desenharLinha(serie){
   const svg = $('svgLinha');
-  const n = plano.length;
+  const n = serie.length;
   if(n === 0){ svg.innerHTML = ''; return; }
 
   const g = geometria();
   W = g.W; H = g.H; M = g.M; FS = g.fs; FSV = g.fsv; COMPACTO = g.compacto;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
-  const maxV = Math.max(plano[n-1].liquido, fundo[n-1].liquido);
+  // a linha "sem imposto" e o teto: a mesma acumulacao bruta para os dois caminhos
+  const maxV = serie[n-1].planoBruto;
   const yMax = escalaAgradavel(maxV, 4);
   const px = i => M.l + (W-M.l-M.r) * (n===1 ? 1 : i/(n-1));
   const py = v => H-M.b - (H-M.t-M.b) * (v/yMax);
 
-  const linha = (arr, key) => arr.map((d,i)=> (i?'L':'M') + px(i).toFixed(1) + ' ' + py(d[key]).toFixed(1)).join(' ');
+  const linha = key => serie.map((d,i)=> (i?'L':'M') + px(i).toFixed(1) + ' ' + py(d[key]).toFixed(1)).join(' ');
 
   // gridlines horizontais recessivas + rotulos do eixo y
   const passos = 4;
@@ -476,29 +529,32 @@ function desenharLinha(plano, fundo, anosBase){
     }
   }
 
-  const ultPlano = plano[n-1].liquido, ultFundo = fundo[n-1].liquido;
-  const colide = Math.abs(py(ultPlano)-py(ultFundo)) < 22;
-
-  /* Rotulos de ponta: a direita quando ha margem; no compacto vao para dentro
-     do grafico, acima e abaixo do ultimo ponto, para nao serem cortados. */
-  /* No compacto os valores finais vao para o canto superior esquerdo, que numa
-     curva crescente e sempre area vazia — evita cruzar as linhas. Com halo na
-     cor do painel por seguranca. */
+  const fim = serie[n-1];
+  const ultBruto = fim.planoBruto, ultPlano = fim.planoLiquido, ultFundo = fim.fundoLiquido;
   const halo = 'stroke="#FAF6EC" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round"';
+
+  /* Rotulos dos tres valores finais. Como a distancia vertical entre eles JA e
+     o imposto de cada caminho, eles nunca colidem quando ha imposto — mas nos
+     primeiros anos ficam perto, entao vao empilhados no canto vazio. */
+  const rot = (y, cor, txt, peso) =>
+    `<text x="${M.l+8}" y="${y}" font-size="${FSV+1}" font-weight="${peso}" fill="${cor}" ${halo} font-family="IBM Plex Mono, monospace">${txt}</text>`;
   const rotPonta = COMPACTO
     ? `<text x="${M.l+8}" y="${M.t-12}" font-size="${FS-1}" fill="#8C95A3" font-family="Inter, sans-serif">no ano ${n}</text>
-       <text x="${M.l+8}" y="${M.t+14}" font-size="${FSV+1}" font-weight="600" fill="#8B6525" ${halo} font-family="IBM Plex Mono, monospace">${brlCurto(ultPlano)}</text>
-       <text x="${M.l+8}" y="${M.t+34}" font-size="${FSV+1}" font-weight="600" fill="#3A6EA5" ${halo} font-family="IBM Plex Mono, monospace">${brlCurto(ultFundo)}</text>`
-    : `<text x="${px(n-1)+9}" y="${(py(ultPlano)+(colide?-4:3.5)).toFixed(1)}" font-size="${FSV}" font-weight="600" fill="#8B6525" font-family="IBM Plex Mono, monospace">${brlCurto(ultPlano)}</text>
-       <text x="${px(n-1)+9}" y="${(py(ultFundo)+(colide?13:3.5)).toFixed(1)}" font-size="${FSV}" font-weight="600" fill="#3A6EA5" font-family="IBM Plex Mono, monospace">${brlCurto(ultFundo)}</text>`;
+       ${rot(M.t+14, '#8C95A3', brlCurto(ultBruto), 500)}
+       ${rot(M.t+34, '#8B6525', brlCurto(ultPlano), 600)}
+       ${rot(M.t+54, '#3A6EA5', brlCurto(ultFundo), 600)}`
+    : `<text x="${px(n-1)+9}" y="${(py(ultBruto)+3.5).toFixed(1)}" font-size="${FSV}" font-weight="500" fill="#8C95A3" font-family="IBM Plex Mono, monospace">${brlCurto(ultBruto)}</text>
+       <text x="${px(n-1)+9}" y="${(py(ultPlano)+3.5).toFixed(1)}" font-size="${FSV}" font-weight="600" fill="#8B6525" font-family="IBM Plex Mono, monospace">${brlCurto(ultPlano)}</text>
+       <text x="${px(n-1)+9}" y="${(py(ultFundo)+3.5).toFixed(1)}" font-size="${FSV}" font-weight="600" fill="#3A6EA5" font-family="IBM Plex Mono, monospace">${brlCurto(ultFundo)}</text>`;
 
   svg.innerHTML = `
-    <title id="chartTitle">Patrimônio líquido projetado ao longo dos anos, dentro do plano e fora dele</title>
+    <title id="chartTitle">Patrimônio projetado sem imposto, dentro do plano e num fundo comum</title>
     ${grid}${ticks}${xlab}
     <line x1="${M.l}" y1="${H-M.b}" x2="${W-M.r}" y2="${H-M.b}" stroke="rgba(16,36,63,.28)" stroke-width="1"/>
     <text x="${M.l}" y="${H-5}" font-size="${FS-.5}" fill="#8C95A3" font-family="Inter, sans-serif">anos de plano</text>
-    <path d="${linha(fundo,'liquido')}" fill="none" stroke="var(--s-fora)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-    <path d="${linha(plano,'liquido')}" fill="none" stroke="var(--s-plano)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${linha('planoBruto')}" fill="none" stroke="#8C95A3" stroke-width="1.5" stroke-dasharray="5 4" stroke-linejoin="round"/>
+    <path d="${linha('fundoLiquido')}" fill="none" stroke="var(--s-fora)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${linha('planoLiquido')}" fill="none" stroke="var(--s-plano)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="${px(n-1)}" cy="${py(ultPlano)}" r="4" fill="var(--s-plano)" stroke="#FAF6EC" stroke-width="2"/>
     <circle cx="${px(n-1)}" cy="${py(ultFundo)}" r="4" fill="var(--s-fora)" stroke="#FAF6EC" stroke-width="2"/>
     ${rotPonta}
@@ -523,20 +579,24 @@ function desenharLinha(plano, fundo, anosBase){
     cross.style.opacity = 1;
     svg.querySelector('#crossL').setAttribute('x1', X);
     svg.querySelector('#crossL').setAttribute('x2', X);
+    const d = serie[i];
     svg.querySelector('#crossP').setAttribute('cx', X);
-    svg.querySelector('#crossP').setAttribute('cy', py(plano[i].liquido));
+    svg.querySelector('#crossP').setAttribute('cy', py(d.planoLiquido));
     svg.querySelector('#crossF').setAttribute('cx', X);
-    svg.querySelector('#crossF').setAttribute('cy', py(fundo[i].liquido));
-    const dif = plano[i].liquido - fundo[i].liquido;
+    svg.querySelector('#crossF').setAttribute('cy', py(d.fundoLiquido));
+    // a distancia da linha tracejada ate cada linha liquida E o custo do imposto
+    const irPlano = d.planoBruto - d.planoLiquido;
+    const irFundo = d.planoBruto - d.fundoLiquido;
     tip.innerHTML =
       `<span class="tt">ano ${i+1}</span>` +
-      `<div class="tr"><span class="sw" style="background:var(--s-plano)"></span>No plano <b>${brl(plano[i].liquido)}</b></div>` +
-      `<div class="tr"><span class="sw" style="background:var(--s-fora)"></span>Fundo comum <b>${brl(fundo[i].liquido)}</b></div>` +
-      `<div class="tr" style="opacity:.75;margin-top:2px">Diferença <b>${dif>=0?'+':'−'}${brl(Math.abs(dif))}</b></div>`;
+      `<div class="tr"><span class="sw" style="background:#8C95A3"></span>Sem imposto <b>${brl(d.planoBruto)}</b></div>` +
+      `<div class="tr"><span class="sw" style="background:var(--s-plano)"></span>No plano <b>${brl(d.planoLiquido)}</b> <span style="opacity:.6">− ${brl(irPlano)} de IR</span></div>` +
+      `<div class="tr"><span class="sw" style="background:var(--s-fora)"></span>Fundo comum <b>${brl(d.fundoLiquido)}</b> <span style="opacity:.6">− ${brl(irFundo)} de IR</span></div>` +
+      `<div class="tr" style="opacity:.75;margin-top:2px">Diferença <b>${d.diferenca>=0?'+':'−'}${brl(Math.abs(d.diferenca))}</b></div>`;
     tip.style.opacity = 1;
     const left = (X / W) * r.width;
     tip.style.left = Math.min(Math.max(8, left - tip.offsetWidth/2), r.width - tip.offsetWidth - 8) + 'px';
-    tip.style.top = Math.max(4, (py(Math.max(plano[i].liquido, fundo[i].liquido)) / H) * r.height - tip.offsetHeight - 12) + 'px';
+    tip.style.top = Math.max(4, (py(d.planoBruto) / H) * r.height - tip.offsetHeight - 12) + 'px';
   };
   const sair = () => { cross.style.opacity = 0; tip.style.opacity = 0; };
   box.addEventListener('mousemove', mover);
@@ -576,16 +636,15 @@ function render(){
     return;
   }
 
-  const plano = planoVgbl(aporte, st.anos, st.taxa);
-  const fundo = fundoComeCotas(aporte, st.anos, st.taxa);
-  const fim = plano[st.anos-1], fimF = fundo[st.anos-1];
+  const serie = projecao(aporte, st.anos, st.taxa, INFLACAO);
+  const fim = serie[st.anos-1];
   const depositado = aporte * MESES_ANO * st.anos;
-  const dif = fim.liquido - fimF.liquido;
+  const dif = fim.diferenca;
 
-  $('heroVal').textContent = brl(fim.liquido);
+  $('heroVal').textContent = brl(fim.planoLiquido);
   $('heroDesc').innerHTML =
     `Já descontado o imposto de renda, e <b>em dinheiro de hoje</b>. São <b>${st.anos} anos</b> ` +
-    `de depósitos até os ${st.alvo} anos. Saldo antes do imposto: <b>${brl(fim.bruto)}</b>.`;
+    `de depósitos até os ${st.alvo} anos. Sem nenhum imposto seriam <b>${brl(fim.planoBruto)}</b>.`;
 
   $('kAporte').textContent = brl(aporte);
   $('kAporteD').innerHTML = st.proprio > 0
@@ -595,30 +654,31 @@ function render(){
   $('kTotalD').textContent = st.proprio > 0
     ? `${st.anos} anos × 12 meses, sendo ${brl(comp.voluntario * MESES_ANO * st.anos)} do seu bolso`
     : `${st.anos} anos × 12 meses, sem custo para você`;
-  $('kRenda').textContent = brl(rendaPrazoDefinido(fim.liquido, 20, st.taxa));
+  $('kRenda').textContent = brl(rendaPrazoDefinido(fim.planoLiquido, 20, st.taxa));
   $('kRendaD').textContent = 'consumindo o saldo ao longo do período';
 
   // renda: prazos definidos + a alternativa de viver so do rendimento
   $('tabRenda').querySelector('tbody').innerHTML =
     [15, 20, 25].map(a =>
       `<tr><td>Durante ${a} anos</td>` +
-      `<td class="gold">${brl(rendaPrazoDefinido(fim.liquido, a, st.taxa))}</td>` +
+      `<td class="gold">${brl(rendaPrazoDefinido(fim.planoLiquido, a, st.taxa))}</td>` +
       `<td>R$ 0</td></tr>`).join('') +
     `<tr><td>Para sempre, só o rendimento</td>` +
-    `<td class="gold">${brl(rendaPerpetua(fim.liquido, st.taxa))}</td>` +
-    `<td>${brl(fim.liquido)}</td></tr>`;
+    `<td class="gold">${brl(rendaPerpetua(fim.planoLiquido, st.taxa))}</td>` +
+    `<td>${brl(fim.planoLiquido)}</td></tr>`;
 
-  desenharLinha(plano, fundo, st.anos);
+  desenharLinha(serie);
 
-  const sinal = dif >= 0 ? 'a mais' : 'a menos';
+  const irPlano = fim.planoBruto - fim.planoLiquido;
+  const irFundo = fim.planoBruto - fim.fundoLiquido;
   $('capLinha').innerHTML =
-    `As duas linhas partem do <b>mesmo depósito mensal de ${brl(aporte)}</b> e da mesma rentabilidade. ` +
-    `A diferença é só o imposto: no plano não há come-cotas e a alíquota cai com o tempo; ` +
-    `no fundo comum o imposto é cobrado a cada seis meses e deixa de render. ` +
-    `Em ${st.anos} anos isso dá <b>${brl(Math.abs(dif))} ${sinal}</b> para você. ` +
+    `A linha tracejada é o que você teria <b>se não houvesse imposto nenhum</b> — ela vale para os ` +
+    `dois caminhos, porque o depósito e a rentabilidade são os mesmos. A distância dela até cada ` +
+    `linha colorida é o que o imposto custou: <b>${brl(irPlano)}</b> no plano e ` +
+    `<b>${brl(irFundo)}</b> no fundo comum, em ${st.anos} anos. ` +
     (dif < 0
-      ? `Neste prazo o plano ainda fica atrás: a alíquota do plano só cai para 10% depois de 10 anos <em>contados de cada depósito</em>, e em prazos curtos ela é alta. A vantagem aparece nos horizontes longos.`
-      : `A vantagem cresce com o tempo, porque o imposto que você não paga hoje continua rendendo.`);
+      ? `Neste prazo o plano ainda fica atrás: a alíquota de cada depósito só cai para 10% depois de 10 anos <em>contados daquele depósito</em>, e em prazos curtos ela é alta. A virada acontece por volta do ano 11.`
+      : `No fundo, o imposto sai a cada seis meses e o que sai deixa de render — é isso que abre a distância com o tempo.`);
 
   // carencia — saidas antecipadas.
   // So a parcela PATRONAL entra no vesting; o saldo total inclui o aporte proprio,
@@ -628,7 +688,7 @@ function render(){
   if(marcos.length === 0) marcos.push(Math.max(1, Math.floor(st.anos/2)));
   tbody.innerHTML = marcos.map(a => {
     const r = recuperacaoPatronal(comp.patronal, a, st.taxa);
-    const saldoTotal = planoVgbl(aporte, a, st.taxa)[a-1].bruto;
+    const saldoTotal = projecao(aporte, a, st.taxa, INFLACAO)[a-1].planoBruto;
     const fica = saldoTotal - r.recuperado;
     return `<tr><td>${a} anos</td><td>${brl(saldoTotal)}</td>` +
            `<td class="gold">${brl(fica)} <span style="color:var(--ink-mute);font-size:10px">(${Math.round(fica/saldoTotal*100)}%)</span></td>` +
