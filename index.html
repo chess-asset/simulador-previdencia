@@ -241,7 +241,7 @@
         <h2 class="sec">Se você sair antes de se aposentar</h2>
         <div class="tabwrap">
           <table class="tb" id="tabVesting">
-            <thead><tr><th>Saída depois de</th><th>Saldo acumulado</th><th>Fica com você</th><th>Volta à instituição</th></tr></thead>
+            <thead><tr><th>Saída depois de</th><th>Saldo acumulado</th><th>Fica com você</th><th>Fica no plano</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -250,6 +250,9 @@
           — nada no 1º ano, 100% a partir do 6º, contado daquele depósito. Os mais antigos já são
           inteiramente seus; os mais recentes ainda não.
           <b id="notaProp"></b>
+          A parcela que fica no plano <b>não vai para o caixa da instituição</b> — a norma proíbe:
+          ela é usada em favor de quem permanece no plano e/ou para abater aportes futuros da
+          instituição.
           <b>Ao chegar na idade de aposentadoria, 100% do saldo é seu</b> — a carência só vale para
           quem sai antes.
         </p>
@@ -415,9 +418,12 @@ function rendaPrazoDefinido(saldo, anos, taxa){
   return saldo * i / (1 - Math.pow(1 + i, -n));
 }
 
-/* Parcela nao vestida que volta a instituicao numa saida apos `anos`,
-   apurada aporte a aporte (espelha engine.recuperacao_patronal). */
-function recuperacaoPatronal(aporte, anos, taxa){
+/* Parcela NAO vestida do saldo patronal numa saida apos `anos`, apurada aporte
+   a aporte (espelha engine.parcela_nao_vestida). Nao volta ao caixa da
+   instituicao: Res. CNSP 464/2024 art. 66 par. 1 veda o recebimento; Circular
+   SUSEP 699/2024 art. 19 par. 2 admite so uso em favor dos remanescentes e/ou
+   quitacao de premios futuros da instituidora. */
+function parcelaNaoVestida(aporte, anos, taxa){
   const n = anos*MESES_ANO, im = taxaMensal(taxa);
   let recuperado=0, saldo=0;
   for(let m=1; m<=n; m++){
@@ -687,7 +693,7 @@ function render(){
   const marcos = [5,10,15,20].filter(a => a < st.anos);
   if(marcos.length === 0) marcos.push(Math.max(1, Math.floor(st.anos/2)));
   tbody.innerHTML = marcos.map(a => {
-    const r = recuperacaoPatronal(comp.patronal, a, st.taxa);
+    const r = parcelaNaoVestida(comp.patronal, a, st.taxa);
     const saldoTotal = projecao(aporte, a, st.taxa, INFLACAO)[a-1].planoBruto;
     const fica = saldoTotal - r.recuperado;
     return `<tr><td>${a} anos</td><td>${brl(saldoTotal)}</td>` +
@@ -742,7 +748,7 @@ function autoteste(){
   casos.push(['one-pager 20a = 682.799', quase(p15[19].bruto, 682799, 1)]);
 
   // 5. vesting: recuperacao estabiliza (~R$ 51 mil no cenario do one-pager)
-  const v = recuperacaoPatronal(1200, 20, 0.08);
+  const v = parcelaNaoVestida(1200, 20, 0.08);
   casos.push(['vesting 20a = 51.353', quase(v.recuperado, 51353, 1)]);
 
   // 6. composicao do aporte
@@ -750,9 +756,9 @@ function autoteste(){
   casos.push(['composicao 400+250', cp.patronal===400 && cp.voluntario===250 && cp.total===650]);
 
   // 7. a carencia nao pode alcancar o aporte proprio: dobrar o que o colaborador
-  //    poe nao muda em nada o que volta para a instituicao
-  const rA = recuperacaoPatronal(composicao(5000, 0).patronal, 10, 0.08).recuperado;
-  const rB = recuperacaoPatronal(composicao(5000, 500).patronal, 10, 0.08).recuperado;
+  //    poe nao muda em nada a parcela nao vestida
+  const rA = parcelaNaoVestida(composicao(5000, 0).patronal, 10, 0.08).recuperado;
+  const rB = parcelaNaoVestida(composicao(5000, 500).patronal, 10, 0.08).recuperado;
   casos.push(['carencia so no patronal', quase(rA, rB, 1e-9)]);
 
   // 8. leitura dos campos: o ponto e milhar no dinheiro e decimal na taxa.
